@@ -1,0 +1,12 @@
+# 
+ScanInterval: 60 # Scan for new file
+
+LocalHost:
+  ScanPath: /Users/mdvinh/GitHub/txtdir
+
+RemoteHost:
+  HostName: 10.0.0.2
+  UserName: mdvinh
+  KeyFile: /Users/mdvinh/Keys/10002
+  RemotePort: 4444
+  DestPath: /home/mdvinh/fromA
