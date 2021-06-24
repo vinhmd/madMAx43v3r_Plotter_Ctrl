@@ -2,7 +2,7 @@
 
 ## What is this
 
-This script will help you run madMAx43v3r plotter easily, especially when you have some disk to fill up.
+This script will help you run madMAx43v3r plotter easily, especially when you have some disks to fill up.
 
 ## Requirements
 
