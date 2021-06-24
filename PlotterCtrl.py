@@ -117,7 +117,7 @@ if __name__ == '__main__':
         PlotterCmd = GenCmd(NumOfPlotArg, Config)
         if PlotterCmd:
             RunYet = True
-            os.popen(f'{PlotterCmd}')
+            os.system(f'{PlotterCmd}')
             
         if (not PlotterCmd) and (not RunYet):
             print('There is something wrong in your configuration.\nPlease check and run again.')
