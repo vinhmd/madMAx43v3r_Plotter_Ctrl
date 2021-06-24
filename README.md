@@ -2,7 +2,7 @@
 
 ## What is this
 
-This script will help you run madMAx43v3r plotter easily, especially when you have some disk to fill out.
+This script will help you run madMAx43v3r plotter easily, especially when you have some disk to fill up.
 
 ## Requirements
 
@@ -19,7 +19,8 @@ Open terminal
 ***For Ubuntu***
 
 ```
-cd <path to this project>
+git clone https://github.com/vinhmd/madMAx43v3r_Plotter_Ctrl.git
+cd madMAx43v3r_Plotter_Ctrl
 . ./activate
 python3 PlotterCtrl.py [opt: number of plot to create]
 ```
@@ -34,7 +35,7 @@ pip install pyyaml
 python PlotterCtrl.py [opt: number of plot to create]
 ```
 
-If the number of plot is not specified, the script will calculate it base on free space of the destination, fill out one by one.
+If the number of plot is not specified, the script will calculate it base on free space of the destination and fill up one by one.
 
 ## How to Support
 
