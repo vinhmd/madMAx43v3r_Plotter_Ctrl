@@ -23,6 +23,7 @@ def GenCmd(NumOfPlot, Config):
             PlotAvailable = CalPlot(d, Config['Main']['PlotSize'])
             if PlotAvailable:
                 Dest = d
+                Config['MadPlotter']['d'].remove(d)
                 print(f'{d} has enough free space for {PlotAvailable} plot(s).')
                 if not NumOfPlot:
                     NumOfPlot = PlotAvailable
