@@ -2,73 +2,76 @@
 # -*- encoding: utf-8 -*-
 #
 
-from pathlib import Path
-from time import sleep
 from datetime import datetime
+from shutil import disk_usage
 import signal
 import sys
 import os
-from shutil import disk_usage
 import yaml
 
 ################################################## Global vars
 StartTime = datetime.now()
-SleepTime = 60
-DelLockedFile = False
-AppPath = Path('.')
-# Create a locled file to indicate that an instance of script in running
-LockedFile = AppPath / "PlotterCtrl.lock"
-PlotSize = 108797952330 # MadMax plot's size in bytes
-################################################## Global vars => End
+ConFile = "config.yaml"
 
-################################################## Plotter parameters
-# Note: tmp and destination path must have trail "/"
-# PlotterPath = Path('/home/mdvinh/madmax/build/chia_plot')
-# NumOfThreads = 16
-# tmp1 = './tmpplot/'
-# tmp2 = '/mnt/nvme980/tmp2/'
-# dest = '/mnt/sas201/hpool/'
-# PoolKey = 'ad1f1da3c152e8d27c9565f35c60b9981a9034ab06a3c59db18efe41ae4255fb88f4605c51bf05d3856461f63a342631'
-# FarmerKey = 'b5bdf57ebf4c5a02264ae7573a2a8be24cf06aa69ed89a7a4bcffb4e048f8132a8c72c226f193961583b818c958fbf6d'
 
-# if len(sys.argv) == 2:
-#     try:
-#         NumOfPlot = int(sys.argv[1])
-#         print("NumOfPlot: ", NumOfPlot)
-#     except ValueError:
-#         print("Invalid value")
-#         sys.exit(0)
-# elif len(sys.argv) == 1:
-#     DiskTatol, DiskUsed, DiskFree = disk_usage(dest)
-#     NumOfPlot = int(DiskFree/PlotSize)
-#     if NumOfPlot == 0:
-#         print('Not engouh space for plots')
-#         sys.exit(0)
-#     print("NumOfPlot: ", NumOfPlot)
-# else:
-#     print("Bớt điên giùm tao")
-#     sys.exit(0)
+################################################## Function Generate Plotter command
+def GenCmd(NumOfPlot, Config):
+    Dest = False
+    while len(Config['MadPlotter']['d']):
+        d = Config['MadPlotter']['d'][0]
+        try:
+            PlotAvailable = CalPlot(d, Config['Main']['PlotSize'])
+            if PlotAvailable:
+                Dest = d
+                print(f'{d} has enough free space for {PlotAvailable} plot(s).')
+                if not NumOfPlot:
+                    NumOfPlot = PlotAvailable
+                    break
+                if NumOfPlot > PlotAvailable:
+                    print(f'You manage to create too many plot than the destination can handle.')
+                    Answer = input('Are you sure? (Y/n): ')
+                    if Answer.lower() == 'n':
+                        exit()
+                    if (Answer.lower() == 'y') or (Answer == ''):
+                        break
+                    else:
+                        return False
+            Config['MadPlotter']['d'].remove(d)
+        except FileNotFoundError:
+            print(d, 'is not exist')
+            Config['MadPlotter']['d'].remove(d)
+    
+    if not Dest:
+        print('There is no destination suitable')
+        return False
 
-# PlotterCmd = f'{PlotterPath} -n {NumOfPlot} -r {NumOfThreads} -t {tmp1} -2 {tmp2} -d {dest} -p {PoolKey} -f {FarmerKey}'
-################################################## Plotter parameters => End
+    PlotterCmd = f"{Config['MadPlotter']['PlotterPath']} -n {NumOfPlot} -d {Dest}"
+
+    for key in Config['MadPlotter']:
+        if (key not in ['PlotterPath', 'd']) and (Config['MadPlotter'][key] != None):
+            PlotterCmd = f"{PlotterCmd} -{key} {Config['MadPlotter'][key]}"
+    
+    return PlotterCmd
+
+
+################################################## Function Calculate number of plots base on Dest free space
+def CalPlot(Dest, PlotSize):
+    DiskTatol, DiskUsed, DiskFree = disk_usage(Dest)
+    return int(DiskFree/PlotSize)
+
 
 ################################################## Function to catch ctrl-c
 # Handle ctr-c
 def signal_handler(sig, frame):
     print('\nYou pressed Ctrl+C!')
-
-    if DelLockedFile:
-        os.remove(LockedFile)
-
     RunTime()
     sys.exit(0)
-################################################## Function to catch ctrl-c => End
+
 
 ################################################## Function Run timme
 def RunTime():
-    Duration = datetime.now() - StartTime
-    print('Run in', Duration)
-################################################## Function Run timme => End
+    print('Run in', datetime.now() - StartTime)
+
 
 
 
@@ -76,25 +79,55 @@ def RunTime():
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
 
-    # If locked file existed then wait for other instance to complte
-    # while Path(LockedFile).is_file():
-    #     sleep (SleepTime)
-        # print(".", end =" ", flush=True)
-
-    # Create locked file for this instance
-    # open(LockedFile, 'w').close()
-    # DelLockedFile = True
-
-    # This block is for testing only
-    # print("Testing block")
-    # while True:
-    #     sleep(5)
-    #     print(".", end =" ", flush=True)
+    # Load config
+    try:
+        with open(ConFile, 'r') as file:
+            Config = yaml.safe_load(file)
+    except FileNotFoundError:
+        print("Configuration file is missing")
+        exit()
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+        exit()
     
-    # Execute plotter commnad
-    # os.system(f'{PlotterCmd}')
+    # Check NumOfPlot to create
+    if len(sys.argv) == 2:
+        try:
+            NumOfPlotArg = int(sys.argv[1])
+            if NumOfPlotArg <= 0:
+                print("Number of plot must be greater than 0")
+                exit()
+        except ValueError:
+            print("Invalid value")
+            exit()
+    elif len(sys.argv) == 1:
+        NumOfPlotArg = False
+    else:
+        print("python3 PlotterCtrl.py [optional: Num of plot to create]")
+        exit()
 
-    # Remove locked file when done
-    # os.remove(LockedFile)
+    if not os.path.isfile(Config['MadPlotter']['PlotterPath']):
+        print('Please check for plotter path')
+        exit()
+
+    RunYet = False
+
+    while True:
+        PlotterCmd = GenCmd(NumOfPlotArg, Config)
+        if PlotterCmd:
+            RunYet = True
+            os.popen(f'{PlotterCmd}')
+            
+        if (not PlotterCmd) and (not RunYet):
+            print('There is something wrong in your configuration.\nPlease check and run again.')
+            break
+        
+        if (not PlotterCmd):
+            print('Task completed')
+            break
+        
+        if NumOfPlotArg:
+            print('Task completed')
+            break
+
     RunTime()
-    print('Done')
