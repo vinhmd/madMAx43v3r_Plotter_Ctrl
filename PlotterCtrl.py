@@ -39,11 +39,11 @@ def GenCmd(NumOfPlot, Config):
                         return False
             Config['MadPlotter']['d'].remove(d)
         except FileNotFoundError:
-            print(d, 'is not exist')
+            print(d, 'does not exist')
             Config['MadPlotter']['d'].remove(d)
     
     if not Dest:
-        print('There is no destination suitable')
+        print('There is no suitable destination')
         return False
 
     PlotterCmd = f"{Config['MadPlotter']['PlotterPath']} -n {NumOfPlot} -d {Dest}"
