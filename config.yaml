@@ -8,9 +8,10 @@ MadPlotter:
   # -d, --finaldir arg   Final directory (default = <tmpdir>)
   # -w, --waitforcopy    Wait for copy to start next plot
   # -p, --poolkey arg    Pool Public Key (48 bytes)
-  # -c, --contract arg   Pool Contract Address (64 chars)
+  # -c, --contract arg   Pool Contract Address (62 chars)
   # -f, --farmerkey arg  Farmer Public Key (48 bytes)
   # -G, --tmptoggle      Alternate tmpdir/tmpdir2 (default = false)
+  # -K, --rmulti2 arg    Thread multiplier for P2 (default = 1)
   # --help           Print help
   # Note: tmp and destination path must have trail "/"
   # Note 2: To plot for pools, specify <contract> address via -c instead of <poolkey>, see chia plotnft show
@@ -27,7 +28,8 @@ MadPlotter:
   p: 
   c: ''
   f: ''
-  G:
+  G: 
+  K: 
 
 Main:
   PlotSize: 108797952330 # MadMax plot's size in bytes
