@@ -37,7 +37,8 @@ def GenCmd(NumOfPlot, Config):
                         break
                     else:
                         return False
-            Config['MadPlotter']['d'].remove(d)
+            else:
+                Config['MadPlotter']['d'].remove(d)
         except FileNotFoundError:
             print(d, 'does not exist')
             Config['MadPlotter']['d'].remove(d)
